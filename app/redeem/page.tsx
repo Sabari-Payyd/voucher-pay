@@ -177,10 +177,10 @@ function RedemptionPageContent() {
             style={{
               width: "100%",
               paddingTop: "32px",
-              paddingBottom: "16px",
+              paddingBottom: "80px",
               display: "flex",
               justifyContent: "center",
-              marginTop: "40px",
+              marginTop: "50px",
             }}>
             <Image src="/Logo-voucherPay.png" alt="VoucherPay Logo" width={187} height={52} />
           </div>
@@ -211,29 +211,8 @@ function RedemptionPageContent() {
                   marginBottom: "48px",
                   marginTop: "100px",
                 }}>
-                Redirecting you to redeem your gift card…
+                Complete Gift Voucher Redemption Process
               </h1>
-
-              {/* Warning Box */}
-              <div
-                style={{
-                  backgroundColor: "#F3F8FD",
-                  border: "1px solid #DDE3E9",
-                  borderRadius: "6px",
-                  padding: "16px 24px",
-                  fontSize: "14px",
-                  color: "#697386",
-                  textAlign: "center",
-                  lineHeight: "150%",
-                  marginBottom: "48px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "12px",
-                }}>
-                <span style={{ fontSize: "18px" }}>⚠️</span>
-                <span>Redeeming this voucher will allow the merchant to receive the funds.</span>
-              </div>
 
               {/* Button */}
               <button
@@ -255,19 +234,30 @@ function RedemptionPageContent() {
                   backgroundColor: isValid ? "#4F46E5" : "#9CA3AF",
                   cursor: isValid ? "pointer" : "not-allowed",
                   boxShadow: isValid ? "0 4px 6px rgba(79, 70, 229, 0.3)" : "none",
+                  marginBottom: "48px",
                 }}>
                 {isValid ? "Redeem Gift Card" : "Invalid URL Parameters"}
               </button>
 
-              {/* Footer text */}
-              <p
+              {/* Warning Box */}
+              <div
                 style={{
+                  backgroundColor: "#F3F8FD",
+                  border: "1px solid #DDE3E9",
+                  borderRadius: "6px",
+                  padding: "16px 24px",
                   fontSize: "14px",
-                  color: "#9CA3AF",
-                  marginTop: "24px",
+                  color: "#697386",
+                  textAlign: "center",
+                  lineHeight: "150%",
+                  marginBottom: "48px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "12px",
                 }}>
-                This could take a few seconds.
-              </p>
+                <span>Please redeem the voucher to avail the merchant&apos;s service.</span>
+              </div>
             </div>
           </div>
         </div>

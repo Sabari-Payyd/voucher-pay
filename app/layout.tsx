@@ -9,7 +9,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "VoucherPay - Redeem Your Gift Card",
+  title: "Confirm Gift Card Redemption - VoucherPay",
   description: "Redeem your gift cards and vouchers with VoucherPay",
 };
 
