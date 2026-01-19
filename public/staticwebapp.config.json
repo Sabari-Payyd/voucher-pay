@@ -1,0 +1,17 @@
+{
+  "navigationFallback": {
+    "rewrite": "/redeem/index.html"
+  },
+  "trailingSlash": "auto",
+  "routes": [
+    {
+      "route": "/",
+      "rewrite": "/redeem/index.html"
+    },
+    {
+      "route": "/*",
+      "serve": "/index.html",
+      "statusCode": 200
+    }
+  ]
+}
