@@ -42,11 +42,112 @@ function RedemptionPageContent() {
     }
   }, [voucherCode, customerId]);
 
+  // Initialize OrcuneWidget in useEffect to ensure it runs client-side
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    // Define OrcuneWidget object
+    window.OrcuneWidget = {
+      init: function (config: Record<string, unknown>) {
+        this.apiKey = config.apiKey;
+        this.baseUrl = (config.baseUrl as string) || "https://orcune.com";
+        this.config = config;
+      },
+
+      redeem: async function (voucherCode: string, customerId: string) {
+        try {
+          const tokenRes = await fetch("/api/create-orcune-token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ voucherCode, customerId }),
+          });
+
+          const data = await tokenRes.json();
+
+          if (!tokenRes.ok) {
+            const errorMessage = (data as Record<string, unknown>).error || "Failed to create token";
+            throw new Error(errorMessage as string);
+          }
+
+          const { redemptionUrl } = data as Record<string, unknown>;
+
+          if (!redemptionUrl) {
+            throw new Error("No redemptionUrl returned from backend");
+          }
+
+          const popup = window.open(
+            redemptionUrl as string,
+            "OrcuneRedeem",
+            "width=500,height=600,scrollbars=yes",
+          );
+
+          if (!popup) {
+            throw new Error("Popup was blocked");
+          }
+
+          window.addEventListener("message", (event: MessageEvent) => {
+            if ((event.data as Record<string, unknown>).type === "ORCUNE_REDEMPTION_COMPLETE") {
+              popup.close();
+              if ((this.config as Record<string, unknown>).onSuccess) {
+                ((this.config as Record<string, unknown>).onSuccess as (voucher: unknown) => void)(
+                  (event.data as Record<string, unknown>).voucher,
+                );
+              }
+            }
+          });
+        } catch (error) {
+          if ((this.config as Record<string, unknown>).onError) {
+            ((this.config as Record<string, unknown>).onError as (error: unknown) => void)(error);
+          }
+        }
+      },
+    };
+
+    // Initialize the widget
+    (window.OrcuneWidget as Record<string, (config: Record<string, unknown>) => void>).init({
+      onSuccess: function (voucher: unknown) {
+        const event = new CustomEvent("redemptionSuccess", { detail: voucher });
+        window.dispatchEvent(event);
+      },
+      onError: function (error: unknown) {
+        const event = new CustomEvent("redemptionError", { detail: error });
+        window.dispatchEvent(event);
+      },
+    });
+
+    // Set up event listeners
+    const successHandler = () => {
+      if (window.__showToast) {
+        window.__showToast("success", "Voucher redeemed successfully!");
+      }
+    };
+
+    const errorHandler = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const errorMessage = customEvent.detail?.message || "An error occurred during redemption";
+      if (window.__showToast) {
+        window.__showToast("error", errorMessage);
+      }
+    };
+
+    window.addEventListener("redemptionSuccess", successHandler);
+    window.addEventListener("redemptionError", errorHandler);
+
+    // Cleanup function
+    return () => {
+      window.removeEventListener("redemptionSuccess", successHandler);
+      window.removeEventListener("redemptionError", errorHandler);
+    };
+  }, []);
+
   const handleRedeem = () => {
     if (!voucherCode || !customerId) {
       toast.error("Please provide voucherCode and customerId in URL");
       return;
     }
+
     if (window.OrcuneWidget) {
       window.OrcuneWidget.redeem(voucherCode, customerId);
     }
@@ -171,90 +272,6 @@ function RedemptionPageContent() {
           </div>
         </div>
       </div>
-
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            (function() {
-              window.OrcuneWidget = {
-                init: function(config) {
-                  this.apiKey = config.apiKey;
-                  this.baseUrl = config.baseUrl || 'https://orcune.com';
-                  this.config = config;
-                },
-                
-                redeem: async function(voucherCode, customerId) {
-                  try {
-                    const tokenRes = await fetch('/api/create-orcune-token', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ voucherCode, customerId }),
-                    });
-                    
-                    const data = await tokenRes.json();
-                    
-                    if (!tokenRes.ok) {
-                      const errorMessage = data.error || 'Failed to create token';
-                      throw new Error(errorMessage);
-                    }
-                    
-                    const { redemptionUrl } = data;
-                    
-                    if (!redemptionUrl) {
-                      throw new Error('No redemptionUrl returned from backend');
-                    }
-                    
-                    const popup = window.open(
-                      redemptionUrl,
-                      'OrcuneRedeem',
-                      'width=500,height=600,scrollbars=yes'
-                    );
-                    
-                    if (!popup) {
-                      throw new Error('Popup was blocked');
-                    }
-                    
-                    window.addEventListener('message', function(event) {
-                      if (event.data.type === 'ORCUNE_REDEMPTION_COMPLETE') {
-                        popup.close();
-                        if (this.config.onSuccess) {
-                          this.config.onSuccess(event.data.voucher);
-                        }
-                      }
-                    }.bind(this));
-                  } catch (error) {
-                    if (this.config.onError) this.config.onError(error);
-                  }
-                }
-              };
-            })();
-
-            OrcuneWidget.init({
-              onSuccess: function(voucher) {
-                const event = new CustomEvent('redemptionSuccess', { detail: voucher });
-                window.dispatchEvent(event);
-              },
-              onError: function(error) {
-                const event = new CustomEvent('redemptionError', { detail: error });
-                window.dispatchEvent(error);
-              }
-            });
-
-            window.addEventListener('redemptionSuccess', (e) => {
-              if (window.__showToast) {
-                window.__showToast('success', 'Voucher redeemed successfully!');
-              }
-            });
-
-            window.addEventListener('redemptionError', (e) => {
-              const errorMessage = e.detail?.message || 'An error occurred during redemption';
-              if (window.__showToast) {
-                window.__showToast('error', errorMessage);
-              }
-            });
-          `,
-        }}
-      />
     </>
   );
 }
