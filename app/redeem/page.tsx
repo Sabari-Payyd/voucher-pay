@@ -176,8 +176,8 @@ function RedemptionPageContent() {
           <div
             style={{
               width: "100%",
-              paddingTop: "32px",
-              paddingBottom: "80px",
+              paddingTop: "17px",
+              paddingBottom: "40px",
               display: "flex",
               justifyContent: "center",
               marginTop: "50px",
@@ -209,7 +209,7 @@ function RedemptionPageContent() {
                   fontWeight: "500",
                   color: "#374151",
                   marginBottom: "48px",
-                  marginTop: "100px",
+                  marginTop: "50px",
                 }}>
                 Complete Gift Voucher Redemption Process
               </h1>
